@@ -64,15 +64,16 @@
 
                 let fields = {
                     "code": "code",
-                    "200": "s200",
-                    "404": "s404",
-                    "500": "s500",
-                    "503": "s503",
+                    "s200": "s200",
+                    "s404": "s404",
+                    "s500": "s500",
+                    "s503": "s503",
                     "mo": "mo",
                     "default": "default"
                 }
 
                 document.querySelector(`input[name="code"]`).value = code;
+                document.querySelector(`input[name="code"]`).setAttribute('readonly', true);
 
                 Object.keys(data).forEach(key => {
                     document.querySelector(`input[name="${fields[key]}"]`).value = data[key];

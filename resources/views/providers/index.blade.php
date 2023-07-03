@@ -69,7 +69,7 @@
     <script>
         setData({
             url: 'providers',
-            fields: ['200', '404', '500', '503', 'mo', 'default'],
+            fields: ['s200', 's404', 's500', 's503', 'mo', 'default'],
             useId: true,
             buttons: ['edit', 'delete']
         });
