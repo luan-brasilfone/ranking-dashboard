@@ -50,5 +50,17 @@
     "Bad": "Ruim",
     "Last MOs": "Últimas MOs",
     "Ranked by provider": "Ranqueado por fornecedor",
-    "Error Logs": "Logs de Erro"
+    "Error Logs": "Logs de Erro",
+    "Log in": "Entrar",
+    "Log in with your registered data": "Entre com seus dados cadastrados",
+    "Keep me logged in": "Mantenha-me conectado",
+    "Don't have an account": "Não tem uma conta",
+    "Sign up": "Cadastre-se",
+    "Forgot password": "Esqueceu a senha",
+    "Username": "Usuário",
+    "Password": "Senha",
+    "Invalid Credentials": "Credenciais Inválidas",
+    "Username not found": "Usuário não encontrado",
+    "Wrong password": "Senha incorreta",
+    "Log out": "Sair"
 }
