@@ -1,6 +1,7 @@
 {
     "Dashboard": "Painel",
     "Providers": "Fornecedor|Fornecedores",
+    "Numbers": "Número|Números",
     "Number Ranking": "Ranqueamento de Números",
     "Edit reliability by status": "Edição de confiabilidade por status retornado",
     "Search...": "Pesquisar...",
@@ -62,5 +63,11 @@
     "Invalid Credentials": "Credenciais Inválidas",
     "Username not found": "Usuário não encontrado",
     "Wrong password": "Senha incorreta",
-    "Log out": "Sair"
+    "Log out": "Sair",
+    "Search a needle on a haystack": "Procurar uma agulha em um palheiro",
+    "Ranked Numbers": "Números Ranqueados",
+    "Ranked SMSs": "SMSs Ranqueados",
+    "Inspect": "Inspecionar",
+    "Inspect a number": "Inspecionar um número",
+    "Date": "Data"
 }

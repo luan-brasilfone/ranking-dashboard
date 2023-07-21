@@ -104,6 +104,11 @@ Route::prefix('node')->group(function () {
         return json_encode($return);
     });
 
+    Route::get('/numbers/{code?}', function ($code = false) {
+        if (!$code) return Http::get("http://localhost:3000/numbers")->json();
+        return Http::get("http://localhost:3000/numbers/$code")->body();
+    });
+
     Route::get('/dashboard', function () {
         return Http::get("http://localhost:3000/dashboard")->json();
     });

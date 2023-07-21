@@ -8,7 +8,8 @@
 
     const button_config = {
         edit: "primary",
-        delete: "danger"
+        delete: "danger",
+        inspect: "info"
     }
 
     if ("{{ App::getLocale() }}" == 'pt_BR') {
@@ -31,12 +32,28 @@
         .then(data => {
             let rows = [];
             Object.keys(data).forEach(key => {
-                let row = JSON.parse(data[key]);
+
+                if (typeof data[key] == 'string')
+                    data[key] = JSON.parse(data[key]);
+
+                let row = data[key];
                 let arr = [];
 
                 if (data_options.useId) arr.push(key);
 
                 data_options.fields.forEach(field => {
+                    if (field.split('::').length > 1) {
+                        let value = field.split('::')[0];
+                        let type = field.split('::')[1];
+
+                        switch (type) {
+                            case 'date':
+                                row[field] = new Date(parseInt(row[value])).toLocaleString('{{ App::getLocale() }}'.replace('_', '-').toLowerCase());
+                                break;
+                            default:
+                                break;
+                        }
+                    }
                     arr.push(row[field]);
                 });
 
@@ -44,14 +61,19 @@
 
                     let buttons = "";
                     data_options.buttons.forEach(action => {
-                        let button = ``;
+                        let button = "";
+                        let url = data_options.url;
+                        if (typeof url.explode === 'function') url = url.explode("/")[0];
 
                         switch (action) {
                             case 'edit':
-                                button += `<a href="{{ url("/") }}/${data_options.url}/${action}/${key}" class="btn btn-${button_config[action]} btn-sm">{{ __('Edit') }}</a> `;
+                                button += `<a href="{{ url("/") }}/${url}/${action}/${key}" class="btn btn-${button_config[action]} btn-sm">{{ __('Edit') }}</a> `;
                                 break;
                             case 'delete':
-                                button += `<a href="{{ url("/api/node") }}/${data_options.url}/${key}" class="btn btn-${button_config[action]} btn-sm" onclick="return confirmDelete(this)">{{ __('Delete') }}</a> `;
+                                button += `<a href="{{ url("/api/node") }}/${url}/${key}" class="btn btn-${button_config[action]} btn-sm" onclick="return confirmDelete(this)">{{ __('Delete') }}</a> `;
+                                break;
+                            case 'inspect':
+                                button += `<a href="{{ url("/") }}/${url}/${key}" class="btn btn-${button_config[action]} btn-sm">{{ __('Inspect') }}</a> `;
                             default:
                                 break;
                         }
@@ -76,7 +98,8 @@
 
         options.data = data;
 
-        if (dataTable.destroy) dataTable.destroy();
+        if (dataTable.destroy)
+            dataTable.destroy();
 
         dataTable = new simpleDatatables.DataTable('#table1', options);
         

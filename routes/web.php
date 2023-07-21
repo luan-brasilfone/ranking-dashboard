@@ -46,6 +46,20 @@ Route::prefix("/providers")->group(function () {
     });
 });
 
+Route::prefix("/numbers")->group(function () {
+
+    Route::get("/", function () {
+        if (!session()->has("user")) return redirect("/login");
+
+        return view("numbers/index");
+    });
+    Route::get("/{number}", function (string $number) {
+        if (!session()->has("user")) return redirect("/login");
+
+        return view("numbers/inspect", ['number' => $number]);
+    });
+});
+
 Route::prefix("/login")->group(function () {
     
     Route::match(["get", "post"], "/", function (){

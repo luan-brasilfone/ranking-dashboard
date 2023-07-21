@@ -30,7 +30,7 @@
                                             </div>
                                         </div>
                                         <div class="col-8">
-                                            <h6 class="text-muted font-semibold">{{ trans_choice('Ranked', 2) }}</h6>
+                                            <h6 class="text-muted font-semibold">{{ __('Ranked Numbers') }}</h6>
                                             <h6 class="font-extrabold mb-0" id="ranks">0</h6>
                                         </div>
                                     </div>
@@ -82,7 +82,7 @@
                                         </div>
                                         <div class="col-8">
                                             <h6 class="text-muted font-semibold">{{ __('Error Logs') }}</h6>
-                                            <h6 class="font-extrabold mb-0" id="logs">0</h6>
+                                            <h6 class="font-extrabold mb-0" id="error_logs">0</h6>
                                         </div>
                                     </div>
                                 </div>
@@ -166,7 +166,7 @@
                             <div class="col-12">
                                 <div class="card">
                                     <div class="card-header">
-                                        <h4>{{ trans_choice('Ranked', 2) }}</h4>
+                                        <h4>{{ __('Ranked SMSs') }}</h4>
                                     </div>
                                     <div class="card-body">
                                         <div id="chart-ranked"></div>
@@ -447,6 +447,7 @@
         fetch("{{ url('api/node/dashboard') }}")
             .then(response => response.json())
             .then(data => {
+                console.log(data.log_history)
 
                 let optionsRanked = { series: [{ name: "{{ trans_choice('Ranked', 2) }}", data: [] }], xaxis: { categories: [] } };
                 let optionsSuccessError = {
@@ -467,35 +468,44 @@
                         {name: '{{ __("Bad") }}', data: [] }
                     ], xaxis: { categories: [] }
                 };
-                let rankedTotal = 0, rankedGood = 0, rankedBad = 0;
+                let rankedTotal = rankedGood = rankedBad = 0;
 
                 for (let i = 14; i >= 1; i--) {
 
-                    let date = new Date(Date.now() - (i-1) * 86400000);
-                    
-                    optionsRanked.series[0].data.push(data.log_history[`ranked_day${i}`]);
-
                     // 86400000 = 1 day in milliseconds
+                    let date = new Date(Date.now() - (i-1) * 86400000);
+                    const ymd = date.toISOString().split('T')[0];
+
+                    const mo_quantity = parseInt(data.log_history[ymd]['MO']) || 0;
+                    const s200_quantity = parseInt(data.log_history[ymd]['s200']) || 0;
+                    const s404_quantity = parseInt(data.log_history[ymd]['s404']) || 0;
+                    const s500_quantity = parseInt(data.log_history[ymd]['s500']) || 0;
+                    const s503_quantity = parseInt(data.log_history[ymd]['s503']) || 0;
+                    const default_quantity = parseInt(data.log_history[ymd]['default']) || 0;
+
+                    console.log(data.log_history[ymd]['s200'] || 0);
+
                     optionsRanked.xaxis.categories.push("{{ __('Day') }} " + date.getDate());
 
-                    optionsSuccessError.series[0] += parseInt(data.log_history[`ranked_day${i}_MO`]);
-                    optionsSuccessError.series[1] += parseInt(data.log_history[`ranked_day${i}_s200`]);
-                    optionsSuccessError.series[2] += parseInt(data.log_history[`ranked_day${i}_s404`]);
-                    optionsSuccessError.series[3] += parseInt(data.log_history[`ranked_day${i}_s500`]);
-                    optionsSuccessError.series[4] += parseInt(data.log_history[`ranked_day${i}_s503`]);
-                    optionsSuccessError.series[5] += parseInt(data.log_history[`ranked_day${i}_default`]);
+                    optionsSuccessError.series[0] += mo_quantity;
+                    optionsSuccessError.series[1] += s200_quantity;
+                    optionsSuccessError.series[2] += s404_quantity;
+                    optionsSuccessError.series[3] += s500_quantity;
+                    optionsSuccessError.series[4] += s503_quantity;
+                    optionsSuccessError.series[5] += default_quantity;
 
-                    optionsTotal.series[0].data.push(parseInt(data.log_history[`ranked_day${i}`]));
-                    rankedTotal += parseInt(data.log_history[`ranked_day${i}`]);
-
-                    let good = parseInt(data.log_history[`ranked_day${i}_MO`]) + parseInt(data.log_history[`ranked_day${i}_s200`]);
+                    const good = mo_quantity + s200_quantity;
                     optionsTotal.series[1].data.push(good);
                     rankedGood += good;
 
-                    let bad = parseInt(data.log_history[`ranked_day${i}_s404`]) + parseInt(data.log_history[`ranked_day${i}_s500`])
-                       bad += parseInt(data.log_history[`ranked_day${i}_s503`]) + parseInt(data.log_history[`ranked_day${i}_default`]);
+                    const bad = s404_quantity + s500_quantity + s503_quantity + default_quantity;
                     optionsTotal.series[2].data.push(bad);
                     rankedBad += bad;
+
+                    const total = good + bad;
+                    optionsRanked.series[0].data.push(total);
+                    optionsTotal.series[0].data.push(total);
+                    rankedTotal += total;
 
                     optionsTotal.xaxis.categories.push(date.toLocaleDateString( '{{ App::getLocale() }}'.replace("_", "-") ));
                 }
@@ -505,9 +515,12 @@
                 config.optionsTotal = optionsTotal;
 
                 data.log_mo.forEach(mo => {
+                    
+                    const provider_name = mo.provider.charAt(0).toUpperCase() + mo.provider.slice(1);
                     let element = document.getElementById('last-mo').cloneNode(true);
+
                     element.classList.remove('d-none');
-                    element.querySelector('.name h5').innerHTML = mo.provider.charAt(0).toUpperCase() + mo.provider.slice(1);
+                    element.querySelector('.name h5').innerHTML = provider_name;
                     element.querySelector('.name h6').innerHTML = "@"+mo.number;
 
                     fetch(`{{ url('mazer-assets/images/provider') }}/${mo.provider}.png`)
@@ -523,22 +536,27 @@
                 });
 
                 data.ranked_by_provider.forEach(provider => {
+
+                    const provider_name = provider.code.charAt(0).toUpperCase() + provider.code.slice(1);
                     let element = document.getElementById('ranked-by-provider').cloneNode(true);
+
                     element.classList.remove('d-none');
-                    element.querySelector('#ranked-by-provider-name').innerHTML = provider.code.charAt(0).toUpperCase() + provider.code.slice(1);
+                    element.querySelector('#ranked-by-provider-name').innerHTML = provider_name;
                     element.querySelector('#ranked-by-provider-total').innerHTML = provider.count;
 
-                    fetch(`{{ url('mazer-assets/images/provider') }}/${provider.code}.png`)
-                        .then(response => response.blob())
-                        .then(blob => {
-                            if (blob.type == 'image/png'){
-                                const img = URL.createObjectURL(blob);
-                                element.querySelector('.avatar img').src = img;
-                            }
-                        });
+                    if (provider.hasImage)
+                        fetch(`{{ url('mazer-assets/images/provider') }}/${provider.code}.png`)
+                            .then(response => response.blob())
+                            .then(blob => {
+                                if (blob.type == 'image/png'){
+                                    const img = URL.createObjectURL(blob);
+                                    element.querySelector('.avatar img').src = img;
+                                }
+                            });
 
                     document.querySelector('#ranked-by-provider').insertAdjacentElement('afterend', element);
                 });
+                console.log('optionsRanked', optionsRanked, 'optionsSuccessError', optionsSuccessError, 'optionsTotal', optionsTotal);
 
                 delete data.log_history, delete data.log_mo, delete data.ranked_by_provider;
                 

@@ -28,6 +28,13 @@
                     </a>
                 </li>
 
+                <li class="sidebar-item">
+                    <a href="{{ url('/numbers') }}" class='sidebar-link'>
+                        <i class="bi bi-phone-fill"></i>
+                        <span>{{ trans_choice('Numbers', 2) }}</span>
+                    </a>
+                </li>
+
                 <script>
                     document.querySelector('a.sidebar-link[href="{{ Request::url() }}"]').parentElement.classList.add('active');
                 </script>
